@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'industrial_overlays.dart'; // The industrial_overlays.dart file is imported here
+import '../consumer/preview_dialogs.dart';
+import 'industrial_overlays.dart'; // Ensure this file exists in the same directory
 
 class ThreeDProductionPreviewScreen extends StatefulWidget {
   const ThreeDProductionPreviewScreen({super.key});
@@ -132,7 +133,7 @@ class _ThreeDProductionPreviewScreenState
         // Action buttons on the right side
         Row(
           children: [
-            // 1. MODIFY Button (Modified - opens the edit popup when clicked)
+            // 1. MODIFY Button
             _buildHoverableWidget(
               id: 'btn_modify',
               builder: (isHovered) {
@@ -143,8 +144,7 @@ class _ThreeDProductionPreviewScreenState
                       : Matrix4.identity(),
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // Triggering the new edit design dialog
-                      EditDesignDialog.show(context);
+                      PreviewDialogs.showEditDesign(context);
                     },
                     icon: Icon(
                       Icons.edit_outlined,
@@ -172,7 +172,7 @@ class _ThreeDProductionPreviewScreenState
                         borderRadius: BorderRadius.circular(8),
                       ),
                       backgroundColor: isHovered
-                          ? Colors.white.withValues(alpha: 0.05)
+                          ? Colors.white.withOpacity(0.05)
                           : Colors.transparent,
                     ),
                   ),
@@ -193,8 +193,8 @@ class _ThreeDProductionPreviewScreenState
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accentOrange.withValues(
-                          alpha: isHovered ? 0.6 : 0.2,
+                        color: accentOrange.withOpacity(
+                          isHovered ? 0.6 : 0.2,
                         ),
                         blurRadius: isHovered ? 20 : 8,
                         spreadRadius: isHovered ? 2 : 0,
@@ -203,7 +203,7 @@ class _ThreeDProductionPreviewScreenState
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      IndustrialFeaturesDialog.show(context);
+                      PreviewDialogs.showIndustrial(context);
                     },
                     icon: const Icon(
                       Icons.settings_outlined,
@@ -247,7 +247,7 @@ class _ThreeDProductionPreviewScreenState
                     ),
                     borderRadius: BorderRadius.circular(8),
                     color: isHovered
-                        ? Colors.white.withValues(alpha: 0.05)
+                        ? Colors.white.withOpacity(0.05)
                         : Colors.transparent,
                   ),
                   child: Icon(
@@ -272,8 +272,8 @@ class _ThreeDProductionPreviewScreenState
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accentCyan.withValues(
-                          alpha: isHovered ? 0.6 : 0.2,
+                        color: accentCyan.withOpacity(
+                          isHovered ? 0.6 : 0.2,
                         ),
                         blurRadius: isHovered ? 20 : 8,
                         spreadRadius: isHovered ? 2 : 0,
@@ -282,7 +282,7 @@ class _ThreeDProductionPreviewScreenState
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      ExportDesignDialog.show(context);
+                      PreviewDialogs.showExport(context);
                     },
                     icon: const Icon(
                       Icons.file_download_outlined,
@@ -506,42 +506,6 @@ class _ThreeDProductionPreviewScreenState
                 width: 1.5,
               ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Row(
-                children: [
-                  if (isColor && colorVal != null) ...[
-                    Container(
-                      height: 12,
-                      width: 12,
-                      decoration: BoxDecoration(
-                        color: colorVal,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    value,
-                    style: TextStyle(
-                      color: textDark,
-                      fontSize: 14,
-                      fontWeight: isHovered ? FontWeight.bold : FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         );
       },
