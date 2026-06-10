@@ -1,46 +1,4 @@
-import 'package:flutter/material.dart';
 
-// =========================================================================
-// 1. EDIT DESIGN DIALOG (Newly added for the MODIFY button)
-// =========================================================================
-class EditDesignDialog extends StatefulWidget {
-  const EditDesignDialog({super.key});
-
-  static void show(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => const EditDesignDialog(),
-    );
-  }
-
-  @override
-  State<EditDesignDialog> createState() => _EditDesignDialogState();
-}
-
-class _EditDesignDialogState extends State<EditDesignDialog> {
-  String activeTab = 'Design Options';
-
-  // Design Options States
-  String selectedFabric = 'Silk';
-  String selectedPattern = 'Solid';
-  Color primaryColor = const Color(0xFF13192B);
-  Color secondaryColor = const Color(0xFF13192B);
-
-  String selectedSleeveLength = 'Short';
-  String selectedNeckline = 'Round';
-  String selectedFit = 'Regular';
-  String selectedLength = 'Regular';
-
-  // Measurements States
-  double shoulders = 38;
-  double chest = 43;
-  double waist = 32;
-  double hips = 40;
-
-  late TextEditingController shouldersCtrl;
-  late TextEditingController chestCtrl;
-  late TextEditingController waistCtrl;
   late TextEditingController hipsCtrl;
 
   // Color Palette Grid data from screenshots
@@ -64,24 +22,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
 
   final List<String> fabrics = [
     'Cotton',
-    'Silk',
-    'Linen',
-    'Wool',
-    'Polyester',
-    'Denim',
-    'Leather',
-    'Velvet',
-    'Satin',
-    'Chiffon',
-  ];
 
-  final List<String> patterns = [
-    'Solid',
-    'Stripes',
-    'Polka Dots',
-    'Floral',
-    'Geometric',
-    'Abstract',
     'Plaid',
     'Paisley',
   ];
@@ -98,34 +39,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
   @override
   void dispose() {
     shouldersCtrl.dispose();
-    chestCtrl.dispose();
-    waistCtrl.dispose();
-    hipsCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      backgroundColor: Colors.white,
-      child: Container(
-        width: 750,
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildPopupHeader(),
-            _buildCustomTabs(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: activeTab == 'Design Options'
-                    ? _buildDesignOptionsTab()
-                    : _buildMeasurementsTab(),
-              ),
+    chestCtrl.dispose();              ),
             ),
             _buildPopupFooter(),
           ],
@@ -134,45 +48,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
     );
   }
 
-  Widget _buildPopupHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Edit Design',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Adjust any element of your design',
-                style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-              ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.black),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCustomTabs() {
-    return Row(
-      children: [
-        _buildTabButton('Design Options'),
-        _buildTabButton('Measurements'),
-      ],
+  Widget _buildPopupHeader() {      ],
     );
   }
 
@@ -185,52 +61,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: isSelected
-                ? const Color(0xFF0F172A)
-                : const Color(0xFFF8FAFC),
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFE2E8F0),
-                width: 1,
-              ),
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            title,
-            style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF475569),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesignOptionsTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Fabric & Pattern',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDropdown('Fabric', selectedFabric, fabrics, (v) {
-                setState(() => selectedFabric = v!);
-              }),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildDropdown('Pattern', selectedPattern, patterns, (v) {
-                setState(() => selectedPattern = v!);
-              }),
+                ? const Color(0xFF0F172A)              }),
             ),
           ],
         ),
@@ -240,84 +71,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'Primary Color',
-          style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
-        ),
-        const SizedBox(height: 8),
-        _buildColorGrid(primaryColor, (c) => setState(() => primaryColor = c)),
-        const SizedBox(height: 16),
-        const Text(
-          'Secondary Color',
-          style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
-        ),
-        const SizedBox(height: 8),
-        _buildColorGrid(
-          secondaryColor,
-          (c) => setState(() => secondaryColor = c),
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'Style Options',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDropdown(
-                'Sleeve Length',
-                selectedSleeveLength,
-                ['Short', 'Long', 'Sleeveless'],
-                (v) => setState(() => selectedSleeveLength = v!),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildDropdown(
-                'Neckline',
-                selectedNeckline,
-                ['Round', 'V-Neck', 'Collar'],
-                (v) => setState(() => selectedNeckline = v!),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDropdown('Fit', selectedFit, [
-                'Regular',
-                'Slim',
-                'Oversized',
-              ], (v) => setState(() => selectedFit = v!)),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildDropdown('Length', selectedLength, [
-                'Regular',
-                'Long',
-                'Cropped',
-              ], (v) => setState(() => selectedLength = v!)),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMeasurementsTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
+        const Text(            border: Border.all(color: const Color(0xFFBFDBFE)),
           ),
           child: const Text(
             'Adjust measurements to ensure the perfect fit. All measurements are in inches.',
@@ -345,47 +99,7 @@ class _EditDesignDialogState extends State<EditDesignDialog> {
                   shouldersCtrl.text = '${v.round()}';
                 });
               },
-            ),
-            _buildMeasurementField('Chest', chest, 35, 60, chestCtrl, (v) {
-              setState(() {
-                chest = v;
-                chestCtrl.text = '${v.round()}';
-              });
-            }),
-            _buildMeasurementField('Waist', waist, 24, 50, waistCtrl, (v) {
-              setState(() {
-                waist = v;
-                waistCtrl.text = '${v.round()}';
-              });
-            }),
-            _buildMeasurementField('Hips', hips, 30, 60, hipsCtrl, (v) {
-              setState(() {
-                hips = v;
-                hipsCtrl.text = '${v.round()}';
-              });
-            }),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDropdown(
-    String label,
-    String value,
-    List<String> items,
-    ValueChanged<String?> onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          value: value,
+            ),          value: value,
           isExpanded: true,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
