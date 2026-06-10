@@ -1,3 +1,46 @@
+import 'package:flutter/material.dart';
+// Check and ensure the correct import path for your project setup
+import 'production_preview.dart';
+
+class ProductionDesignSystemScreen extends StatefulWidget {
+  const ProductionDesignSystemScreen({super.key});
+
+  @override
+  State<ProductionDesignSystemScreen> createState() =>
+      _ProductionDesignSystemScreenState();
+}
+
+class _ProductionDesignSystemScreenState
+    extends State<ProductionDesignSystemScreen>
+    with SingleTickerProviderStateMixin {
+  // --- Color Palette ---
+  final Color scaffoldBg = const Color(0xFF0B121E);
+  final Color cardBg = const Color(0xFF131C2E);
+  final Color accentOrange = const Color(0xFFFF6B00);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color borderMuted = const Color(0xFF1E293B);
+
+  // --- State Management Variables ---
+  String selectedTab = 'FABRIC & PATTERN';
+
+  // Tab 1: Fabric & Pattern
+  String selectedFabric = 'Cotton';
+  String selectedPattern = 'Solid';
+
+  // Tab 2: Colors
+  Color selectedPrimaryColor = const Color(0xFF1A1A2E);
+  Color selectedSecondaryColor = const Color(0xFF16213E);
+
+  // Tab 3: Style & Fit
+  String selectedSleeveLength = 'Short';
+  String selectedNecklineStyle = 'Round';
+  String selectedFitSpecification = 'Regular';
+
+  // Tab 4: Details
+  String selectedGarmentLength = 'Regular';
+
+  // Map to track hover states for modern UX interactions
+  final Map<String, bool> _hoverStates = {};
 
   // Pre-defined manufacturing color palette
   final List<Color> colorPalette = [
