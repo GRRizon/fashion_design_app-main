@@ -349,7 +349,7 @@ class _ProductionDesignSystemScreenState
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: accentOrange.withValues(0.3)),
+                border: Border.all(color: accentOrange.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,14 +525,14 @@ class _ProductionDesignSystemScreenState
                     color: isSelected
                         ? accentOrange
                         : (isHovered
-                              ? textMuted.withValues(0.6)
+                              ? textMuted.withValues(alpha: 0.6)
                               : borderMuted),
                     width: isSelected ? 1.5 : 1,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: accentOrange.withValues(0.25),
+                            color: accentOrange.withValues(alpha: 0.25),
                             blurRadius: 12,
                             spreadRadius: 1,
                           ),
@@ -589,7 +589,7 @@ class _ProductionDesignSystemScreenState
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: accentOrange.withValues(0.4),
+                            color: accentOrange.withValues(alpha: 0.4),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -673,4 +673,6 @@ class _ProductionDesignSystemScreenState
       child: builder(_hoverStates[id] ?? false),
     );
   }
+}
+ }
 }
