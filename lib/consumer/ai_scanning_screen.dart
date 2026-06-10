@@ -144,7 +144,7 @@ class _AiScanningScreenState extends State<AiScanningScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (_isScanComplete) ...[
-                  // Success Green Check Circle - FIXED withValues()
+                  // Success Green Check Circle - FIXED withOpacity()
                   Container(
                     height: 90,
                     width: 90,

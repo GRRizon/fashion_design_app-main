@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../consumer/preview_dialogs.dart';
-import 'industrial_overlays.dart'; // Ensure this file exists in the same directory
 
 class ThreeDProductionPreviewScreen extends StatefulWidget {
   const ThreeDProductionPreviewScreen({super.key});
@@ -81,7 +80,7 @@ class _ThreeDProductionPreviewScreenState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                border: Border.all(color: accentOrange.withValues(alpha: 0.5)),
+                border: Border.all(color: accentOrange.withValues(alpha: 0.5),),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -172,7 +171,7 @@ class _ThreeDProductionPreviewScreenState
                         borderRadius: BorderRadius.circular(8),
                       ),
                       backgroundColor: isHovered
-                          ? Colors.white.withOpacity(0.05)
+                          ? Colors.white.withValues(alpha: 0.05)
                           : Colors.transparent,
                     ),
                   ),
@@ -193,8 +192,8 @@ class _ThreeDProductionPreviewScreenState
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accentOrange.withOpacity(
-                          isHovered ? 0.6 : 0.2,
+                        color: accentOrange.withValues(
+                          alpha: isHovered ? 0.6 : 0.2,
                         ),
                         blurRadius: isHovered ? 20 : 8,
                         spreadRadius: isHovered ? 2 : 0,
@@ -247,7 +246,7 @@ class _ThreeDProductionPreviewScreenState
                     ),
                     borderRadius: BorderRadius.circular(8),
                     color: isHovered
-                        ? Colors.white.withOpacity(0.05)
+                        ? Colors.white.withValues(alpha: 0.05)
                         : Colors.transparent,
                   ),
                   child: Icon(
@@ -272,8 +271,8 @@ class _ThreeDProductionPreviewScreenState
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accentCyan.withOpacity(
-                          isHovered ? 0.6 : 0.2,
+                        color: accentCyan.withValues(
+                          alpha: isHovered ? 0.6 : 0.2,
                         ),
                         blurRadius: isHovered ? 20 : 8,
                         spreadRadius: isHovered ? 2 : 0,

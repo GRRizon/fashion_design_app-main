@@ -115,7 +115,7 @@ class _ProductionDesignSystemScreenState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                border: Border.all(color: accentOrange.withOpacity(0.5)),
+                border: Border.all(color: accentOrange.withValues(0.5)),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -158,7 +158,7 @@ class _ProductionDesignSystemScreenState
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: accentOrange.withOpacity(isHovered ? 0.6 : 0.3),
+                    color: accentOrange.withValues(isHovered ? 0.6 : 0.3),
                     blurRadius: isHovered ? 20 : 10,
                     spreadRadius: isHovered ? 2 : 0,
                   ),
@@ -349,7 +349,7 @@ class _ProductionDesignSystemScreenState
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: accentOrange.withOpacity(0.3)),
+                border: Border.all(color: accentOrange.withValues(0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +417,7 @@ class _ProductionDesignSystemScreenState
               child: Container(
                 width: 80,
                 height: 2,
-                color: textMuted.withOpacity(0.3),
+                color: textMuted.withValues(0.3),
               ),
             ),
           ),
@@ -525,14 +525,14 @@ class _ProductionDesignSystemScreenState
                     color: isSelected
                         ? accentOrange
                         : (isHovered
-                              ? textMuted.withOpacity(0.6)
+                              ? textMuted.withValues(0.6)
                               : borderMuted),
                     width: isSelected ? 1.5 : 1,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: accentOrange.withOpacity(0.25),
+                            color: accentOrange.withValues(0.25),
                             blurRadius: 12,
                             spreadRadius: 1,
                           ),
@@ -589,7 +589,7 @@ class _ProductionDesignSystemScreenState
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: accentOrange.withOpacity(alpha: 0.4),
+                            color: accentOrange.withValues(0.4),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
