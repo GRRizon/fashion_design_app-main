@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../Industrial_Client/design_studio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Added for Supabase client usage
 import '../screens/auth_service.dart';
+import '../Industrial_Client/production_design_screen.dart';
 
 class IndustrialLoginForm extends StatefulWidget {
   final Color textColor;
@@ -22,27 +23,36 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
 
   final _companyNameController = TextEditingController();
   final _businessIdController = TextEditingController();
-  final _companyEmailController = TextEditingController();
+  final _companyEmailController =
+      TextEditingController(); // Input field for dual login (email or company name) and sign-up
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
+  final SupabaseClient _supabase =
+      Supabase.instance.client; // Supabase instance
 
   void _submitIndustrialForm() async {
-    final email = _companyEmailController.text.trim();
+    final emailOrCompany = _companyEmailController.text.trim();
     final password = _passwordController.text.trim();
     final companyName = _companyNameController.text.trim();
     final businessId = _businessIdController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || (isSignUp && (companyName.isEmpty || businessId.isEmpty))) {
+    if (emailOrCompany.isEmpty ||
+        password.isEmpty ||
+        (isSignUp && (companyName.isEmpty || businessId.isEmpty))) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please complete all required field data points.')),
+        const SnackBar(
+          content: Text('Please complete all required field data points.'),
+        ),
       );
       return;
     }
 
     if (isSignUp && password != _confirmPasswordController.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification failure: Passwords mismatch.')),
+        const SnackBar(
+          content: Text('Verification failure: Passwords mismatch.'),
+        ),
       );
       return;
     }
@@ -50,35 +60,80 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
     setState(() => _isLoading = true);
 
     try {
+      String targetEmail = emailOrCompany;
+
       if (isSignUp) {
+        // Sign-up process with Supabase metadata (role: industrial_client)
         await _authService.signUp(
-          email: email, 
+          email: targetEmail,
           password: password,
           metadata: {
             'company_name': companyName,
             'business_tax_id': businessId,
-            'role': 'industrial_client'
-          }
+            'role': 'industrial_client',
+          },
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Corporate registration sequence validated.')),
+            const SnackBar(
+              content: Text(
+                'Corporate registration sequence validated. Please login!',
+              ),
+              backgroundColor: Colors.green,
+            ),
           );
+          // After successful sign-up, switch the frontend state to login mode
+          setState(() {
+            isSignUp = false;
+            _passwordController.clear();
+            _confirmPasswordController.clear();
+          });
         }
       } else {
-        await _authService.signIn(email: email, password: password);
-      }
+        // Dual login logic: check whether the input is an email or company name
+        if (!targetEmail.contains('@')) {
+          // If a company name is provided, query the 'industrial_clients' table for the email
+          final response = await _supabase
+              .from('industrial_clients')
+              .select('email')
+              .eq('company_name', targetEmail)
+              .maybeSingle();
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ProductionDesignSystemScreen()),
-        );
+          if (response != null && response['email'] != null) {
+            targetEmail = response['email'];
+          } else {
+            throw Exception(
+              'Company name not found! Please check or register first.',
+            );
+          }
+        }
+
+        // Sign in with the resolved email and password
+        await _authService.signIn(email: targetEmail, password: password);
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProductionDesignSystemScreen(),
+            ),
+          );
+        }
       }
     } catch (error) {
       if (mounted) {
+        // Clean and display the error messages returned by Supabase
+        String cleanMessage = error.toString().replaceAll('Exception: ', '');
+        if (cleanMessage.contains('Invalid login credentials')) {
+          cleanMessage =
+              'Incorrect password or account details. Please try again.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.toString()), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(cleanMessage),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -103,7 +158,14 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isSignUp) ...[
-            Text('Company Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: widget.textColor)),
+            Text(
+              'Company Name',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: widget.textColor,
+              ),
+            ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _companyNameController,
@@ -111,15 +173,34 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
               decoration: InputDecoration(
                 hintText: 'XYZ Garments Ltd.',
                 hintStyle: TextStyle(color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.domain_outlined, color: widget.subTextColor),
+                prefixIcon: Icon(
+                  Icons.domain_outlined,
+                  color: widget.subTextColor,
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.textColor)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: widget.textColor),
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            Text('Business Registration / TAX ID', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: widget.textColor)),
+            Text(
+              'Business Registration / TAX ID',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: widget.textColor,
+              ),
+            ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _businessIdController,
@@ -127,70 +208,147 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
               decoration: InputDecoration(
                 hintText: 'BRN-123456789',
                 hintStyle: TextStyle(color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.receipt_long_outlined, color: widget.subTextColor),
+                prefixIcon: Icon(
+                  Icons.receipt_long_outlined,
+                  color: widget.subTextColor,
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.textColor)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: widget.textColor),
+                ),
               ),
             ),
             const SizedBox(height: 20),
           ],
-          Text('Company Email Address', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: widget.textColor)),
+          // Configure dual hint text so users understand they can enter a company name too
+          Text(
+            isSignUp ? 'Company Email Address' : 'Company Name / Email Address',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: widget.textColor,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _companyEmailController,
             enabled: !_isLoading,
             decoration: InputDecoration(
-              hintText: 'corporate@company.com',
+              hintText: isSignUp
+                  ? 'corporate@company.com'
+                  : 'Enter Company Name or Email',
               hintStyle: TextStyle(color: Colors.grey.shade400),
-              prefixIcon: Icon(Icons.business, color: widget.subTextColor),
+              prefixIcon: Icon(
+                isSignUp ? Icons.business : Icons.domain_verification_outlined,
+                color: widget.subTextColor,
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.textColor)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: widget.textColor),
+              ),
             ),
           ),
           const SizedBox(height: 20),
-          Text('Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: widget.textColor)),
+          Text(
+            'Password',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: widget.textColor,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _passwordController,
             obscureText: true,
             enabled: !_isLoading,
             decoration: InputDecoration(
-              hintText: '••••••••',
-              hintStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 2),
+              hintText: '********',
+              hintStyle: TextStyle(
+                color: Colors.grey.shade400,
+                letterSpacing: 2,
+              ),
               prefixIcon: Icon(Icons.lock_outline, color: widget.subTextColor),
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.textColor)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: widget.textColor),
+              ),
             ),
           ),
           const SizedBox(height: 20),
           if (isSignUp) ...[
-            Text('Confirm Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: widget.textColor)),
+            Text(
+              'Confirm Password',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: widget.textColor,
+              ),
+            ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: true,
               enabled: !_isLoading,
               decoration: InputDecoration(
-                hintText: '••••••••',
-                hintStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 2),
-                prefixIcon: Icon(Icons.lock_clock_outlined, color: widget.subTextColor),
+                hintText: '********',
+                hintStyle: TextStyle(
+                  color: Colors.grey.shade400,
+                  letterSpacing: 2,
+                ),
+                prefixIcon: Icon(
+                  Icons.lock_clock_outlined,
+                  color: widget.subTextColor,
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.textColor)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: widget.textColor),
+                ),
               ),
             ),
             const SizedBox(height: 20),
           ],
           const SizedBox(height: 8),
           _FormActionButton(
-            text: isSignUp ? 'Register Corporate Account' : 'Continue as Industrial',
+            text: isSignUp
+                ? 'Register Corporate Account'
+                : 'Continue as Industrial',
             isLoading: _isLoading,
             onTap: _isLoading ? () {} : _submitIndustrialForm,
           ),
@@ -201,14 +359,27 @@ class _IndustrialLoginFormState extends State<IndustrialLoginForm> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  isSignUp ? "Already have a business account? " : "New Business Client? ",
-                  style: TextStyle(color: widget.subTextColor, fontSize: 14, fontWeight: FontWeight.w500),
+                  isSignUp
+                      ? "Already have a business account? "
+                      : "New Business Client? ",
+                  style: TextStyle(
+                    color: widget.subTextColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: _isLoading ? null : () => setState(() => isSignUp = !isSignUp),
+                  onTap: _isLoading
+                      ? null
+                      : () => setState(() => isSignUp = !isSignUp),
                   child: Text(
                     isSignUp ? "Login here" : "Register Business",
-                    style: TextStyle(color: widget.textColor, fontSize: 14, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                    style: TextStyle(
+                      color: widget.textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ],
@@ -225,7 +396,11 @@ class _FormActionButton extends StatefulWidget {
   final VoidCallback onTap;
   final bool isLoading;
 
-  const _FormActionButton({required this.text, required this.onTap, this.isLoading = false});
+  const _FormActionButton({
+    required this.text,
+    required this.onTap,
+    this.isLoading = false,
+  });
 
   @override
   State<_FormActionButton> createState() => _FormActionButtonState();
@@ -239,7 +414,9 @@ class _FormActionButtonState extends State<_FormActionButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
-      cursor: widget.isLoading ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      cursor: widget.isLoading
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
@@ -247,23 +424,43 @@ class _FormActionButtonState extends State<_FormActionButton> {
           width: double.infinity,
           height: 55,
           decoration: BoxDecoration(
-            color: isHovered ? const Color(0xFF1F2937) : const Color(0xFF111827),
+            color: isHovered
+                ? const Color(0xFF1F2937)
+                : const Color(0xFF111827),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               if (isHovered && !widget.isLoading)
-                BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.isLoading)
-                const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
               else ...[
-                Text(widget.text, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(
+                  widget.text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
-              ]
+              ],
             ],
           ),
         ),
