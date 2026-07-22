@@ -114,3 +114,39 @@ The platform significantly reduces design time while improving personalization a
                                      |
                             Supabase Cloud Database
 
+
+# Project Modules
+
+lib/
+
+├── admin/
+│      ├── Dashboard
+│      └── Administrator Login
+│
+├── consumer/
+│      ├── AI Scanning
+│      ├── Design Studio
+│      ├── AI Dress Generator
+│      └── Profile
+│
+├── industrial_client/
+│      ├── Production System
+│      ├── Production Preview
+│      └── CAD Export
+│
+├── screens/
+│      ├── Login
+│      ├── Authentication
+│      └── Common Screens
+│
+├── services/
+│      ├── AI Service
+│      ├── Supabase Service
+│      ├── Authentication
+│      └── Export Service
+│
+├── models/
+│
+├── widgets/
+│
+└── main.dart
