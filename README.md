@@ -322,6 +322,11 @@ Supabase
 
 ---
 
+
+# Methodology
+<img width="784" height="410" alt="image" src="https://github.com/user-attachments/assets/e6ff9f90-c047-4a92-9a73-55c5582989ad" />
+
+
 # Design Principles
 
 The application follows modern software engineering principles:
