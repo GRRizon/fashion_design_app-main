@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -21,8 +22,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final Color exportOrange = const Color(0xFFF97316);
   final Color revenueGreen = const Color(0xFF10B981);
 
-  // Hover State Tracking Map
   final Map<String, bool> _hoverStates = {};
+  final _supabase = Supabase.instance.client;
+
+  // Persistent stream variables to keep the live connection active
+  late final Stream<List<Map<String, dynamic>>> _usersStream;
+  late final Stream<List<Map<String, dynamic>>> _designsStatsStream;
+  late final Stream<List<Map<String, dynamic>>> _exportsStream;
+  late final Stream<List<Map<String, dynamic>>> _revenueStream;
+  late final Stream<List<Map<String, dynamic>>> _recentDesignsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defining the streams in initState prevents repeated reloads
+    _usersStream = _supabase.from('consumers').stream(primaryKey: ['id']);
+    _designsStatsStream = _supabase
+        .from('dress_designs')
+        .stream(primaryKey: ['id']);
+    _exportsStream = _supabase.from('exports').stream(primaryKey: ['id']);
+    _revenueStream = _supabase.from('revenue').stream(primaryKey: ['id']);
+
+    _recentDesignsStream = _supabase
+        .from('dress_designs')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .limit(4);
+  }
+
+  // Relative Time Helper
+  String _getRelativeTime(String? createdAtString) {
+    if (createdAtString == null) return "Just now";
+    final DateTime dateTime = DateTime.parse(createdAtString);
+    final Duration diff = DateTime.now().difference(dateTime);
+
+    if (diff.inMinutes < 60) return "${diff.inMinutes} minutes ago";
+    if (diff.inHours < 24) return "${diff.inHours} hours ago";
+    return "${diff.inDays} days ago";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +121,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          // Header text overflow প্রটেকশন
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -116,7 +152,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // --- 2. 4 Stat Cards Section ---
+  // --- 2. Live Stat Cards Section ---
   Widget _buildStatCardsGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -130,43 +166,83 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           spacing: 24,
           runSpacing: 24,
           children: [
-            _buildStatCard(
-              'Total Users',
-              '2,847',
-              '+12.5%',
-              Icons.people_alt_outlined,
-              userBlue,
-              cardWidth,
-              'card_users',
+            _buildLiveStatCard(
+              title: 'Total Users',
+              stream: _usersStream, // Passing the pre-defined stream
+              icon: Icons.people_alt_outlined,
+              themeColor: userBlue,
+              cardWidth: cardWidth,
+              id: 'card_users',
             ),
-            _buildStatCard(
-              'Designs Created',
-              '15,234',
-              '+23.8%',
-              Icons.layers_outlined,
-              designPurple,
-              cardWidth,
-              'card_designs',
+            _buildLiveStatCard(
+              title: 'Designs Created',
+              stream: _designsStatsStream,
+              icon: Icons.layers_outlined,
+              themeColor: designPurple,
+              cardWidth: cardWidth,
+              id: 'card_designs',
             ),
-            _buildStatCard(
-              'Exports',
-              '8,956',
-              '+18.2%',
-              Icons.vertical_align_bottom_sharp,
-              exportOrange,
-              cardWidth,
-              'card_exports',
+            _buildLiveStatCard(
+              title: 'Exports',
+              stream: _exportsStream,
+              icon: Icons.vertical_align_bottom_sharp,
+              themeColor: exportOrange,
+              cardWidth: cardWidth,
+              id: 'card_exports',
             ),
-            _buildStatCard(
-              'Revenue',
-              '\$124.5K',
-              '+32.1%',
-              Icons.trending_up_rounded,
-              revenueGreen,
-              cardWidth,
-              'card_revenue',
+            _buildLiveStatCard(
+              title: 'Revenue',
+              stream: _revenueStream,
+              icon: Icons.trending_up_rounded,
+              themeColor: revenueGreen,
+              cardWidth: cardWidth,
+              id: 'card_revenue',
+              isRevenue: true,
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLiveStatCard({
+    required String title,
+    required Stream<List<Map<String, dynamic>>> stream,
+    required IconData icon,
+    required Color themeColor,
+    required double cardWidth,
+    required String id,
+    bool isRevenue = false,
+  }) {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: stream,
+      builder: (context, snapshot) {
+        String displayValue = '0';
+
+        if (snapshot.hasData && snapshot.data != null) {
+          if (isRevenue) {
+            double total = 0;
+            for (var row in snapshot.data!) {
+              total += (row['amount'] ?? 0).toDouble();
+            }
+            displayValue = total >= 1000
+                ? '\$${(total / 1000).toStringAsFixed(1)}K'
+                : '\$${total.toStringAsFixed(2)}';
+          } else {
+            displayValue = snapshot.data!.length.toString();
+          }
+        } else if (snapshot.hasError) {
+          displayValue = 'Error';
+        }
+
+        return _buildStatCard(
+          title,
+          displayValue,
+          '+12.5%',
+          icon,
+          themeColor,
+          cardWidth,
+          id,
         );
       },
     );
@@ -198,8 +274,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             boxShadow: [
               BoxShadow(
                 color: isHovered
-                    ? themeColor.withOpacity(0.25)
-                    : Colors.black.withOpacity(0.03),
+                    ? themeColor.withValues(alpha: 0.25)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: isHovered ? 24 : 12,
                 offset: isHovered ? const Offset(0, 8) : const Offset(0, 4),
               ),
@@ -217,7 +293,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     decoration: BoxDecoration(
                       color: isHovered
                           ? themeColor
-                          : themeColor.withOpacity(0.1),
+                          : themeColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -262,7 +338,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // --- 3. Recent Designs List ---
+  // --- 3. Live Recent Designs List ---
   Widget _buildRecentDesignsCard() {
     return Container(
       padding: const EdgeInsets.all(28),
@@ -270,7 +346,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 16),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 16,
+          ),
         ],
       ),
       child: Column(
@@ -301,45 +380,68 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          _buildRecentDesignRow(
-            'SC',
-            'Summer Dress - Floral',
-            'by Sarah Chen',
-            'Exported',
-            const Color(0xFFDCFCE7),
-            const Color(0xFF15803D),
-            '2 hours ago',
-            'row_design1',
-          ),
-          _buildRecentDesignRow(
-            'MB',
-            'Business Suit - Navy',
-            'by Michael Brown',
-            'In Review',
-            const Color(0xFFFEF9C3),
-            const Color(0xFF854D0E),
-            '5 hours ago',
-            'row_design2',
-          ),
-          _buildRecentDesignRow(
-            'ED',
-            'Casual Top - Stripes',
-            'by Emily Davis',
-            'Completed',
-            const Color(0xFFDBEAFE),
-            const Color(0xFF1D4ED8),
-            '1 day ago',
-            'row_design3',
-          ),
-          _buildRecentDesignRow(
-            'JW',
-            'Winter Coat - Wool',
-            'by James Wilson',
-            'Exported',
-            const Color(0xFFDCFCE7),
-            const Color(0xFF15803D),
-            '2 days ago',
-            'row_design4',
+
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _recentDesignsStream, // Persistent stream
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  child: Center(
+                    child: Text(
+                      'No designs created yet.',
+                      style: TextStyle(color: textMuted),
+                    ),
+                  ),
+                );
+              }
+
+              final list = snapshot.data!;
+
+              return Column(
+                children: list.map((row) {
+                  final String title = row['title'] ?? 'Untitled Design';
+                  final String author = row['created_by'] ?? 'Unknown Client';
+                  final String status = row['status'] ?? 'Completed';
+                  final String? createdAt = row['created_at'];
+
+                  Color tagBg = const Color(0xFFDBEAFE);
+                  Color tagText = const Color(0xFF1D4ED8);
+                  if (status == 'Exported') {
+                    tagBg = const Color(0xFFDCFCE7);
+                    tagText = const Color(0xFF15803D);
+                  } else if (status == 'In Review') {
+                    tagBg = const Color(0xFFFEF9C3);
+                    tagText = const Color(0xFF854D0E);
+                  }
+
+                  final String initials = title.isNotEmpty
+                      ? title.substring(0, 2).toUpperCase()
+                      : 'DS';
+
+                  return _buildRecentDesignRow(
+                    initials,
+                    title,
+                    'by $author',
+                    status,
+                    tagBg,
+                    tagText,
+                    _getRelativeTime(createdAt),
+                    'row_design_${row['id']}',
+                  );
+                }).toList(),
+              );
+            },
           ),
         ],
       ),
@@ -368,7 +470,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               : Matrix4.identity(),
           decoration: BoxDecoration(
             color: isHovered
-                ? backgroundBg.withOpacity(0.5)
+                ? backgroundBg.withValues(alpha: 0.5)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -387,15 +489,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              // ১ নম্বর ফিক্স: মাঝখানের টেক্সটগুলোকে Expanded করে দেওয়া হয়েছে যেন তারা বাঁদিকের অংশকে চাপ না দেয়
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      maxLines:
-                          1, // টেক্সট ১ লাইনের বেশি হলে কেটে যাবে (Overflow হবে না)
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: textDark,
@@ -413,10 +513,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ],
                 ),
               ),
-              const SizedBox(
-                width: 12,
-              ), // ডান এবং বাম পাশের কন্টেন্টের মাঝে সেফ স্পেস
-              // ২ নম্বর ফিক্স: ডান পাশের উইজেটকেও একটি নির্দিষ্ট বা মানানসই কাঠামোর মধ্যে আনা হয়েছে
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
@@ -458,7 +555,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 16),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 16,
+          ),
         ],
       ),
       child: Column(
@@ -516,7 +616,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             boxShadow: isHovered
                 ? [
                     BoxShadow(
-                      color: textDark.withOpacity(0.05),
+                      color: textDark.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -528,7 +628,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Icon(icon, color: textDark, size: 20),
               const SizedBox(width: 14),
               Expanded(
-                // কুইক অ্যাকশন টাইটেল লং হলেও যেন ভেঙে না যায়
                 child: Text(
                   title,
                   maxLines: 1,
@@ -570,7 +669,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4F46E5).withOpacity(0.2),
+            color: const Color(0xFF4F46E5).withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -591,7 +690,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Text(
             'All systems operational',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 13,
             ),
           ),
@@ -615,7 +714,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Text(
           name,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
