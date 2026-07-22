@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../admin/admin_dashboard.dart';
-import '../screens/auth_service.dart';
 
 class AdministratorLoginForm extends StatefulWidget {
   final Color textColor;
@@ -19,35 +18,54 @@ class AdministratorLoginForm extends StatefulWidget {
 class _AdministratorLoginFormState extends State<AdministratorLoginForm> {
   final _adminIdController = TextEditingController();
   final _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
+  // Hardcoded default administrator credentials
+  final String _defaultAdminId = 'Admin';
+  final String _defaultPassword = '111111';
+
   void _loginAdmin() async {
-    final email = _adminIdController.text.trim();
+    final inputId = _adminIdController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    // Check for empty input fields
+    if (inputId.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all administrator credentials.')),
+        const SnackBar(
+          content: Text('Please fill in all administrator credentials.'),
+        ),
       );
       return;
     }
 
     setState(() => _isLoading = true);
 
+    // Add a brief artificial delay to make the flow feel more realistic
+    await Future.delayed(const Duration(milliseconds: 800));
+
     try {
-      final response = await _authService.signIn(email: email, password: password);
-      if (response.user != null && mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-          (route) => false,
-        );
+      // Check the input against the default credentials
+      if (inputId == _defaultAdminId && password == _defaultPassword) {
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AdminDashboardScreen(),
+            ),
+            (route) => false,
+          );
+        }
+      } else {
+        // Throw a custom error when the ID or password is incorrect
+        throw 'Incorrect Admin ID or Password!';
       }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.toString()), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -68,7 +86,7 @@ class _AdministratorLoginFormState extends State<AdministratorLoginForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Admin ID / Email',
+          'Admin ID',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -80,7 +98,7 @@ class _AdministratorLoginFormState extends State<AdministratorLoginForm> {
           controller: _adminIdController,
           enabled: !_isLoading,
           decoration: InputDecoration(
-            hintText: 'admin@studio.com',
+            hintText: 'Enter Admin ID',
             hintStyle: TextStyle(color: Colors.grey.shade400),
             prefixIcon: Icon(Icons.shield_outlined, color: widget.subTextColor),
             contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -113,7 +131,7 @@ class _AdministratorLoginFormState extends State<AdministratorLoginForm> {
           obscureText: true,
           enabled: !_isLoading,
           decoration: InputDecoration(
-            hintText: '••••••••',
+            hintText: '********',
             hintStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 2),
             prefixIcon: Icon(Icons.lock_outline, color: widget.subTextColor),
             contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -148,7 +166,7 @@ class _FormActionButton extends StatefulWidget {
   final bool isLoading;
 
   const _FormActionButton({
-    required this.text, 
+    required this.text,
     required this.onTap,
     this.isLoading = false,
   });
@@ -165,7 +183,9 @@ class _FormActionButtonState extends State<_FormActionButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
-      cursor: widget.isLoading ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      cursor: widget.isLoading
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
@@ -173,7 +193,9 @@ class _FormActionButtonState extends State<_FormActionButton> {
           width: double.infinity,
           height: 55,
           decoration: BoxDecoration(
-            color: isHovered ? const Color(0xFF1F2937) : const Color(0xFF111827),
+            color: isHovered
+                ? const Color(0xFF1F2937)
+                : const Color(0xFF111827),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               if (isHovered && !widget.isLoading)
@@ -191,7 +213,10 @@ class _FormActionButtonState extends State<_FormActionButton> {
                 const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
                 )
               else ...[
                 Text(
@@ -204,7 +229,7 @@ class _FormActionButtonState extends State<_FormActionButton> {
                 ),
                 const SizedBox(width: 8),
                 const Icon(Icons.lock_open, color: Colors.white, size: 20),
-              ]
+              ],
             ],
           ),
         ),
