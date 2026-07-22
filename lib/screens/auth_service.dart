@@ -45,7 +45,6 @@ class AuthService {
   // 3. Current Active Auth Session State Check
   User? get currentUser => _supabase.auth.currentUser;
 }
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   // Access global initialized Supabase client
