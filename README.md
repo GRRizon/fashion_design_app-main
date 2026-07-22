@@ -323,8 +323,11 @@ Supabase
 ---
 
 
-# Methodology
-<img width="784" height="410" alt="image" src="https://github.com/user-attachments/assets/e6ff9f90-c047-4a92-9a73-55c5582989ad" />
+## Methodology
+
+<p align="center">
+  <lib/docs/images/methodology.png" alt="Methodology Diagram" width="850"/>
+</p>
 
 
 # Design Principles
