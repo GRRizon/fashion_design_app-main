@@ -114,9 +114,13 @@ The platform significantly reduces design time while improving personalization a
                                      |
                             Supabase Cloud Database
 
+````
+
+---
 
 # Project Modules
 
+```
 lib/
 
 ├── admin/
@@ -150,3 +154,403 @@ lib/
 ├── widgets/
 │
 └── main.dart
+
+```
+
+---
+
+# Technology Stack
+
+| Technology      | Purpose                   |
+| --------------- | ------------------------- |
+| Flutter         | Frontend Development      |
+| Dart            | Programming Language      |
+| Supabase        | Authentication & Database |
+| Gemini AI       | Prompt Intelligence       |
+| Pollinations AI | Image Generation          |
+| HTTP            | API Communication         |
+| PDF Package     | Report Generation         |
+| Share Plus      | Export & Sharing          |
+| Image Picker    | Camera & Gallery          |
+| Path Provider   | File Storage              |
+
+---
+
+# Core Functional Workflow
+
+```
+
+User Login
+     │
+     ▼
+AI Body Scan
+     │
+     ▼
+Body Profile Generation
+     │
+     ▼
+Design Studio
+     │
+     ▼
+Dress Customization
+     │
+     ▼
+AI Prompt Generation
+     │
+     ▼
+AI Image Generation
+     │
+     ▼
+Export Image / PDF
+     │
+     ▼
+Save Design History
+
+```
+
+---
+
+# Industrial Workflow
+
+```
+
+Industrial Login
+       │
+       ▼
+Select Fabric
+       │
+       ▼
+Configure Pattern
+       │
+       ▼
+Configure Color
+       │
+       ▼
+Configure Fit
+       │
+       ▼
+Generate Production Preview
+       │
+       ▼
+Export Production PDF
+
+```
+
+---
+
+# Authentication Flow
+
+```
+
+User
+ │
+ ▼
+Login
+ │
+ ▼
+Supabase Authentication
+ │
+ ▼
+Role Verification
+ │
+ ├───────────────┐
+ ▼               ▼
+Consumer      Industrial
+ │               │
+ ▼               ▼
+Dashboard     Production
+
+```
+
+---
+
+# AI Pipeline
+
+```
+
+Body Scan
+
+↓
+
+Measurement Analysis
+
+↓
+
+Body Profile
+
+↓
+
+Design Preferences
+
+↓
+
+Prompt Engineering
+
+↓
+
+AI Image Generation
+
+↓
+
+Final Dress Design
+
+```
+
+---
+
+# Database Structure
+
+```
+
+Supabase
+
+│
+
+├── consumers
+
+├── industrial_clients
+
+├── body_scans
+
+├── dress_designs
+
+├── exports
+
+└── revenue
+
+```
+
+---
+
+# Design Principles
+
+The application follows modern software engineering principles:
+
+* Modular Design
+* Separation of Concerns
+* Service-Oriented Architecture
+* Component Reusability
+* Cloud-Based Data Management
+* Scalable Structure
+* Responsive User Interface
+
+---
+
+# Reusable Components
+
+The application contains reusable services such as
+
+* Authentication Service
+* Supabase Service
+* AI Image Service
+* Export Service
+
+Reusable UI components include
+
+* Login Forms
+* Profile Cards
+* Configuration Widgets
+* Dialog Components
+* Navigation Components
+
+---
+
+# Security Features
+
+* Secure Authentication
+* Cloud Database
+* Session Management
+* User Role Separation
+* Password Encryption via Supabase
+* Protected User Data
+
+---
+
+# Performance Features
+
+* Lightweight Flutter UI
+* Cloud Storage
+* Asynchronous API Calls
+* Optimized Navigation
+* Efficient State Updates
+* Responsive Layout
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/fashion_design_app.git
+```
+
+---
+
+## Open Project
+
+```bash
+cd fashion_design_app
+```
+
+---
+
+## Install Packages
+
+```bash
+flutter pub get
+```
+
+---
+
+## Configure Environment
+
+Create
+
+```
+.env
+```
+
+Add
+
+```
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_ANON_KEY=YOUR_SUPABASE_KEY
+GEMINI_API_KEY=YOUR_GEMINI_KEY
+```
+
+---
+
+## Run
+
+```bash
+flutter run
+```
+
+---
+
+# Future Improvements
+
+* Real AI Body Measurement Detection
+* 3D Virtual Try-On
+* AR Garment Visualization
+* AI Fashion Recommendation Engine
+* Machine Learning Body Recognition
+* Multi-language Support
+* Online Marketplace
+* Payment Gateway
+* Tailor Booking
+* Order Tracking
+* Smart Fashion Analytics
+
+---
+
+# Screenshots
+
+```
+docs/images/
+
+Login
+
+AI Scan
+
+Design Studio
+
+AI Generated Dress
+
+Industrial Module
+
+Production Preview
+
+Profile Dashboard
+
+Admin Dashboard
+
+```
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+1. Fork Repository
+
+2. Create Feature Branch
+
+3. Commit Changes
+
+4. Push Changes
+
+5. Create Pull Request
+
+---
+
+# License
+
+This project is released under the MIT License.
+
+---
+
+# Developer
+
+**MD. Golam Rabbani**
+
+Department of Computer Science & Engineering
+
+Shanto-Mariam University of Creative Technology
+
+---
+
+# Acknowledgements
+
+* Flutter
+* Dart
+* Supabase
+* Google Gemini AI
+* Pollinations AI
+* Open Source Community
+
+---
+
+## Project Status
+
+🟢 Active Development
+
+Current Version
+
+```
+v1.0.0
+```
+
+---
+
+# Repository Structure
+
+```
+AI Fashion Designing Platform
+│
+├── Consumer Module
+│
+├── Industrial Module
+│
+├── Administrator Module
+│
+├── AI Scan Engine
+│
+├── AI Dress Generator
+│
+├── Design Studio
+│
+├── Production Engine
+│
+├── Export System
+│
+├── Authentication
+│
+├── Supabase Backend
+│
+└── Documentation
+```
+
+
